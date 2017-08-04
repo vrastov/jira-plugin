@@ -23,4 +23,14 @@
     <resource name="view" type="velocity" location="/templates/customfields/test-castom-field/view.vm"/>
     <resource name="edit" type="velocity" location="/templates/customfields/test-castom-field/edit.vm"/>
   </customfield-type>
+  <webwork1 key="castom-field-configuration-action" name="Castom Field Configuration Action" i18n-name-key="castom-field-configuration-action.name">
+    <description key="castom-field-configuration-action.description">The Castom Field Configuration Action Plugin</description>
+    <actions>
+      <action name="ru.cbr.jira.plugins.jira.webwork.CastomFieldConfigurationAction" alias="CastomFieldConfigurationAction">
+        <view name="success">/templates/castom-field-configuration-action/success.vm</view>
+        <view name="input">/templates/castom-field-configuration-action/input.vm</view>
+        <view name="error">/templates/castom-field-configuration-action/error.vm</view>
+      </action>
+    </actions>
+  </webwork1>
 </atlassian-plugin>

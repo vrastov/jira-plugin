@@ -8,10 +8,14 @@ import com.atlassian.jira.issue.customfields.manager.GenericConfigManager;
 import com.atlassian.jira.issue.customfields.persistence.CustomFieldValuePersister;
 import com.atlassian.jira.issue.customfields.persistence.PersistenceFieldType;
 import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.fields.config.FieldConfig;
+import com.atlassian.jira.issue.fields.config.FieldConfigItemType;
 import com.atlassian.jira.issue.fields.layout.field.FieldLayoutItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 
 public class TestCastomField extends AbstractSingleFieldType<Dto> {
@@ -26,6 +30,7 @@ public class TestCastomField extends AbstractSingleFieldType<Dto> {
         return ComponentAccessor.getComponent(tClass);
     }
 
+    @Nonnull
     @Override
     protected PersistenceFieldType getDatabaseType() {
         return PersistenceFieldType.TYPE_UNLIMITED_TEXT;
@@ -37,7 +42,7 @@ public class TestCastomField extends AbstractSingleFieldType<Dto> {
     }
 
     @Override
-    protected Dto getObjectFromDbValue(final Object databaseValue)
+    protected Dto getObjectFromDbValue(@Nonnull final Object databaseValue)
             throws FieldValidationException {
         return getSingularObjectFromString((String) databaseValue);
     }
@@ -57,13 +62,33 @@ public class TestCastomField extends AbstractSingleFieldType<Dto> {
         return parser.parse(string);
     }
 
+    @Nonnull
     @Override
     public Map<String, Object> getVelocityParameters(final Issue issue,
                                                      final CustomField field,
                                                      final FieldLayoutItem fieldLayoutItem) {
         final Map<String, Object> map = super.getVelocityParameters(issue, field, fieldLayoutItem);
         map.put("parser",parser);
+
+        // This method is also called to get the default value, in
+        // which case issue is null so we can't use it to add currencyLocale
+        if (issue == null) {
+            return map;
+        }
+        FieldConfig fieldConfig = field.getRelevantConfig(issue);
+        // Get the stored configuration choice
+//        map.put("currencyLocale", DAO.getCurrentLocale(fieldConfig));
+        map.put("currencyLocale", "currencyLocale");
+
         return map;
+    }
+
+    @Nonnull
+    public List<FieldConfigItemType> getConfigurationItemTypes() {
+        final List<FieldConfigItemType> configurationItemTypes =
+                super.getConfigurationItemTypes();
+        configurationItemTypes.add(new CustomFieldConfigItem());
+        return configurationItemTypes;
     }
 
 }
