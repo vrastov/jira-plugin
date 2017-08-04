@@ -1,3 +1,3 @@
 #if ($value)
-$$value
+<a href="$!value.url">$!value.title</a>
 #end

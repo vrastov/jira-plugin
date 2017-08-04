@@ -1,18 +1,22 @@
 package ru.cbr.jira.plugins.jira.customfields;
 
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.customfields.impl.AbstractSingleFieldType;
 import com.atlassian.jira.issue.customfields.impl.FieldValidationException;
 import com.atlassian.jira.issue.customfields.manager.GenericConfigManager;
 import com.atlassian.jira.issue.customfields.persistence.CustomFieldValuePersister;
 import com.atlassian.jira.issue.customfields.persistence.PersistenceFieldType;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.fields.layout.field.FieldLayoutItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
+import java.util.Map;
 
-public class TestCastomField extends AbstractSingleFieldType<BigDecimal> {
+public class TestCastomField extends AbstractSingleFieldType<Dto> {
     private static final Logger log = LoggerFactory.getLogger(TestCastomField.class);
+    private Parser parser = new Parser();
 
     public TestCastomField() {
         super(getComponent(CustomFieldValuePersister.class), getComponent(GenericConfigManager.class));
@@ -24,43 +28,42 @@ public class TestCastomField extends AbstractSingleFieldType<BigDecimal> {
 
     @Override
     protected PersistenceFieldType getDatabaseType() {
-        return PersistenceFieldType.TYPE_LIMITED_TEXT;
+        return PersistenceFieldType.TYPE_UNLIMITED_TEXT;
     }
 
     @Override
-    protected Object getDbValueFromObject(final BigDecimal customFieldObject) {
+    protected Object getDbValueFromObject(final Dto customFieldObject) {
         return getStringFromSingularObject(customFieldObject);
     }
 
     @Override
-    protected BigDecimal getObjectFromDbValue(final Object databaseValue)
+    protected Dto getObjectFromDbValue(final Object databaseValue)
             throws FieldValidationException {
         return getSingularObjectFromString((String) databaseValue);
     }
 
     @Override
-    public String getStringFromSingularObject(final BigDecimal singularObject) {
-        if (singularObject == null)
+    public String getStringFromSingularObject(final Dto singularObject) {
+        if (singularObject == null) {
             return "";
+        }
         // format
-        return singularObject.toString();
+        return singularObject.getUrl() + " " + singularObject.getTitle();
     }
 
     @Override
-    public BigDecimal getSingularObjectFromString(final String string)
+    public Dto getSingularObjectFromString(final String string)
             throws FieldValidationException {
-        if (string == null)
-            return null;
-        try {
-            final BigDecimal decimal = new BigDecimal(string);
-            // Check that we don't have too many decimal places
-            if (decimal.scale() > 2) {
-                throw new FieldValidationException(
-                        "Maximum of 2 decimal places are allowed.");
-            }
-            return decimal.setScale(2);
-        } catch (NumberFormatException ex) {
-            throw new FieldValidationException("Not a valid number.");
-        }
+        return parser.parse(string);
     }
+
+    @Override
+    public Map<String, Object> getVelocityParameters(final Issue issue,
+                                                     final CustomField field,
+                                                     final FieldLayoutItem fieldLayoutItem) {
+        final Map<String, Object> map = super.getVelocityParameters(issue, field, fieldLayoutItem);
+        map.put("parser",parser);
+        return map;
+    }
+
 }

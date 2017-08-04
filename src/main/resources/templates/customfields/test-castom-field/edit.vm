@@ -1,3 +1,9 @@
 #customControlHeader ($action $customField.id $customField.name $fieldLayoutItem.required $displayParameters $auiparams)
-<input class="text" id="$customField.id" name="$customField.id" type="text" value="$textutils.htmlEncode($!value)" />
+#set ($urlId = '_URL')
+#set ($titleId = '_TITLE')
+#set ($parseValue = $parser.parse($value))
+#set ($js = "AJS.$('#$customField.id').val(AJS.$('#$customField.id$urlId').val() + ' ' + AJS.$('#$customField.id$titleId').val())")
+<input class="text" id="$customField.id" name="$customField.id" type="hidden" value="$textutils.htmlEncode($!value)" />
+URL: <input class="text" id="$customField.id$urlId" type="text" value="$parseValue.url" onchange="$js"/><br/>
+Текст: <input class="text" id="$customField.id$titleId" type="text" value="$parseValue.title" onchange="$js"/>
 #customControlFooter ($action $customField.id $fieldLayoutItem.fieldDescription $displayParameters $auiparams)
